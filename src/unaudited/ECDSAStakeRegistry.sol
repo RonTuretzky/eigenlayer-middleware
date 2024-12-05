@@ -5,8 +5,9 @@ import {ECDSAStakeRegistryStorage, Quorum, StrategyParams} from "./ECDSAStakeReg
 import {IStrategy} from "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 import {IDelegationManager} from "eigenlayer-contracts/src/contracts/interfaces/IDelegationManager.sol";
 import {ISignatureUtils} from "eigenlayer-contracts/src/contracts/interfaces/ISignatureUtils.sol";
+import {ECDSAUpgradeable} from
+    "@openzeppelin-upgrades/contracts/utils/cryptography/ECDSAUpgradeable.sol";
 import {IServiceManager} from "../interfaces/IServiceManager.sol";
-
 import {OwnableUpgradeable} from "@openzeppelin-upgrades/contracts/access/OwnableUpgradeable.sol";
 import {CheckpointsUpgradeable} from "@openzeppelin-upgrades/contracts/utils/CheckpointsUpgradeable.sol";
 import {SignatureCheckerUpgradeable} from "@openzeppelin-upgrades/contracts/utils/cryptography/SignatureCheckerUpgradeable.sol";
@@ -22,6 +23,7 @@ contract ECDSAStakeRegistry is
 {
     using SignatureCheckerUpgradeable for address;
     using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
+    using ECDSAUpgradeable for bytes32;
 
     /// @dev Constructor to create ECDSAStakeRegistry.
     /// @param _delegationManager Address of the DelegationManager contract that this registry interacts with.
@@ -130,7 +132,9 @@ contract ECDSAStakeRegistry is
             bytes[] memory signatures,
             uint32 referenceBlock
         ) = abi.decode(_signatureData, (address[], bytes[], uint32));
-        _checkSignatures(_dataHash, operators, signatures, referenceBlock);
+        bytes32 ethSignedMessageHash = _dataHash.toEthSignedMessageHash();
+
+        _checkSignatures(ethSignedMessageHash, operators, signatures, referenceBlock);
         return IERC1271Upgradeable.isValidSignature.selector;
     }
 
