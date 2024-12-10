@@ -132,9 +132,7 @@ contract ECDSAStakeRegistry is
             bytes[] memory signatures,
             uint32 referenceBlock
         ) = abi.decode(_signatureData, (address[], bytes[], uint32));
-        bytes32 ethSignedMessageHash = _dataHash.toEthSignedMessageHash();
-
-        _checkSignatures(ethSignedMessageHash, operators, signatures, referenceBlock);
+        _checkSignatures(_dataHash, operators, signatures, referenceBlock);
         return IERC1271Upgradeable.isValidSignature.selector;
     }
 
